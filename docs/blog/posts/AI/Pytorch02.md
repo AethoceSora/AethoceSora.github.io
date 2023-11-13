@@ -2,7 +2,7 @@
 title: Pytorch 学习回顾--线性回归
 tags: [Pytorch]
 date: 2022-12-29
-categories: [Software]
+categories: [Software,Machine Learning]
 ---
 
 # Pytorch 学习回顾--线性回归
