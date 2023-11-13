@@ -2,7 +2,7 @@ site_name: Aethoce's Blog
 
 
 nav:
-  - Blog: blog/index.md
+  - Blog: index.md
   - 标签: blog/tags.md
   - 关于我: blog/about.md
 theme:
