@@ -20,7 +20,6 @@ theme:
     - toc.integrate
   
 plugins:
-  - optimize
   - tags:
       tags_file: blog/tags.md
   - blog:
