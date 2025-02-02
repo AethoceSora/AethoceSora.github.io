@@ -1,0 +1,1049 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Aethoce's Blog">
+      
+      
+      
+      
+        <link rel="prev" href="../../07/qlut/">
+      
+      
+        <link rel="next" href="../../22/pytorch-/">
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.0-b3">
+    
+    
+      
+        <title>高性能计算 - 基准测试程序 Linpack（HPL） - Aethoce's Blog</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.83068744.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-67XGNSFM2J"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-67XGNSFM2J",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-67XGNSFM2J",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#-linpackhpl" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../../../.." title="Aethoce&#39;s Blog" class="md-header__button md-logo" aria-label="Aethoce's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Aethoce's Blog
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              高性能计算 - 基准测试程序 Linpack（HPL）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="../../../../" class="md-tabs__link">
+        
+  
+    
+  
+  Blog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  标签
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../about/" class="md-tabs__link">
+        
+  
+    
+  
+  关于我
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../archive/2024/" class="md-tabs__link">
+          
+  
+  归档
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../category/ai/" class="md-tabs__link">
+          
+  
+  分类
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Aethoce&#39;s Blog" class="md-nav__button md-logo" aria-label="Aethoce's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Aethoce's Blog
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      <a href="../../../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Blog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    标签
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../about/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    关于我
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    归档
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            归档
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2024/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2024
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2023/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2023
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2022/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2022
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    分类
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            分类
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/ai/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/cloudnative/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CloudNative
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/competitions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Competitions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/cybersec/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CyberSec
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/devops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DevOps
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/hpc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HPC
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/machine-learning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Machine Learning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/network/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Network
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/ops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ops
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/software/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Software
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+  <div class="md-content md-content--post" data-md-component="content">
+    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
+      <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner md-post">
+          <nav class="md-nav">
+            <div class="md-post__back">
+              <div class="md-nav__title md-nav__container">
+                <a href="../../../../" class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+                  <span class="md-ellipsis">
+                    回到主页
+                  </span>
+                </a>
+              </div>
+            </div>
+            
+            <ul class="md-post__meta md-nav__list">
+              <li class="md-nav__item md-nav__title">
+                <div class="md-nav__link">
+                  <span class="md-ellipsis">
+                    元数据
+                  </span>
+                </div>
+              </li>
+              <li class="md-nav__item">
+                <div class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5v-5Z"/></svg>
+                  <time datetime="2022-12-19 00:00:00" class="md-ellipsis">2022年12月19日</time>
+                </div>
+              </li>
+              
+              
+                <li class="md-nav__item">
+                  <div class="md-nav__link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3H9m3 2 4 13 3-1-4-13-3 1M5 5v13h3V5H5M3 19v2h18v-2H3Z"/></svg>
+                    <span class="md-ellipsis">
+                      分类于
+                      
+                        <a href="../../../../category/software/">Software</a>, 
+                        <a href="../../../../category/hpc/">HPC</a>, 
+                        <a href="../../../../category/ops/">Ops</a></span>
+                  </div>
+                </li>
+              
+              
+                
+                <li class="md-nav__item">
+                  <div class="md-nav__link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7h1.5Z"/></svg>
+                    <span class="md-ellipsis">
+                      
+                        需要 7 分钟阅读时间
+                      
+                    </span>
+                  </div>
+                </li>
+              
+            </ul>
+          </nav>
+          
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hpl" class="md-nav__link">
+    编译安装 HPL
+  </a>
+  
+    <nav class="md-nav" aria-label="编译安装 HPL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    环境依赖
+  </a>
+  
+    <nav class="md-nav" aria-label="环境依赖">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blas" class="md-nav__link">
+    BLAS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mpich" class="md-nav__link">
+    MPICH
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hpl_1" class="md-nav__link">
+    HPL
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hpl_2" class="md-nav__link">
+    调试 HPL 参数文件
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+          
+        </div>
+      </div>
+    </div>
+    <article class="md-content__inner md-typeset">
+      
+        
+  
+  
+
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../../../tags/#high-performance-computing" class="md-tag">High Performance Computing</a>
+      
+    
+  </nav>
+
+
+
+
+<h1 id="-linpackhpl">高性能计算 - 基准测试程序 Linpack（HPL）</h1>
+<p>自通用计算机时代开始以来，就出现了各种用于评估计算机性能的基准测试程序。这些程序的性质通常反映了构建计算机的预期目的，同时还提供了可以与制造商的理论性能估计进行比较的经验性能测量。</p>
+<p>高性能计算中最广泛使用的基准之一就是 Linpack 基准，它的起源是一个线性代数运算包，后来被 Lapack 库和其他竞争对手取代。但 Linpack 的基准测试程序在以后的日子里继续发挥强大的影响力。</p>
+<p>HPL，即 (High-Performance <em>Linpack</em>) 是早期 Linpack 的衍生产品，其高度并行化的设计，使得它用于评估 TOP500 超级计算机的性能排名。</p>
+<!-- more -->
+
+<h2 id="hpl">编译安装 HPL</h2>
+<h3 id="_1">环境依赖</h3>
+<p>在安装 HPL 之前，系统上需要安装好支持 C 语言和 Fortran77 语言的编译器，我个人选择使用 gcc 与 gfortran，我将用他们来安装 BLAS、MPICH 以及 HPL 本体。</p>
+<h4 id="blas">BLAS</h4>
+<p>到<a href="http://www.netlib.org/blas/">BLAS 官网</a>下载好源码，使用 tar 指令解压。进入 BLAS 文件夹，执行编译指令：</p>
+<div class="highlight"><pre><span></span><code>gfortran<span class="w"> </span>-c<span class="w"> </span>-O3<span class="w"> </span>*.f<span class="w"> </span>
+<span class="c1"># 编译所有的 .f 文件，生成 .o文件</span>
+
+ar<span class="w"> </span>rv<span class="w"> </span>libblas.a<span class="w"> </span>*.o<span class="w">  </span>
+<span class="c1"># 链接所有的 .o文件，生成.a 文件</span>
+
+cp<span class="w"> </span>libblas.a<span class="w"> </span>/usr/local/lib<span class="w">  </span>
+<span class="c1">#将库文件复制到系统库目录</span>
+</code></pre></div>
+<h4 id="mpich">MPICH</h4>
+<p>到<a href="https://www.mpich.org/downloads/">MPICH 官网</a>下载源码包，使用 tar 指令解压。进入 mpich 文件夹进行配置：</p>
+<div class="highlight"><pre><span></span><code>./configure --prefix=/home/software/mpich-4.0.3
+</code></pre></div>
+<p>然后<code>make&amp;&amp;make install</code>完成安装。</p>
+<p>记得编辑<code>.bashrc</code>以配置环境变量。可参考下方配置：</p>
+<div class="highlight"><pre><span></span><code># mpich
+
+export MPI_HOME=/home/software/mpich-4.0.3
+
+export PATH=$MPI_HOME/bin:$PATH
+
+export PATH=$PATH:$MPI_HOME/include
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MPI_HOME/lib
+
+export MANPATN=$MANPATH:$MPI_HOME/man
+</code></pre></div>
+<p>最后激活环境变量即可使用：</p>
+<div class="highlight"><pre><span></span><code>source .bashrc
+</code></pre></div>
+<h4 id="hpl_1">HPL</h4>
+<p>于<a href="https://netlib.org/benchmark/hpl/">HPL 官网</a>下载源码包，使用<code>tar</code>指令解压后进入其<code>setup</code>目录。</p>
+<p>手写 Make 文件是一件痛苦的事情，好在这里有一些针对各种体系结构的编译设置实例。对于此实例，我们需要执行<code>make_generic</code>脚本以生成用于创建编译设置的模板。</p>
+<div class="highlight"><pre><span></span><code>cd hpl-2.3/setup
+sh make_generic
+cp Make.UNKNOWN ..Make.linux
+cd ..
+</code></pre></div>
+<p>现在，我们需要修改<code>Make.linux</code>文件，以声明 hpl2.3 目录以及 BLAS 库的位置。</p>
+<div class="highlight"><pre><span></span><code>97 LAlib = -lblas
+</code></pre></div>
+<p>使用-L 标志为编译器提供库位置，例如我的 BLAS 库安装在<code>/usr/local/lib</code>中，则将 97 行更改为：</p>
+<div class="highlight"><pre><span></span><code>97 LAlib = -L/usr/local/lib -lblas
+</code></pre></div>
+<p>另外在第 70 行指定<code>hpl-2.3</code>目录的位置，在 64 行将架构体系的名称从 UNKNOWN 改为 linux</p>
+<p>准备好<code>Make.linux</code>文件后，发出以下指令来编译 HPL。</p>
+<p><code>make arch=linux</code></p>
+<p>这将在<code>bin/linux</code>目录里创建 HPL 的可执行文件 xhpl。</p>
+<h3 id="hpl_2">调试 HPL 参数文件</h3>
+<p>伴随<code>xhpl</code>可执行文件的是一个参数文件 (HPL.dat)，用于调整 HPL 的计算参数。</p>
+<p>下面给出一个示例：</p>
+<div class="highlight"><pre><span></span><code>HPLinpack benchmark input file
+Innovative Computing Laboratory, University of Tennessee
+HPL.out      output file name (if any)
+6            device out (6=stdout,7=stderr,file)
+1            # of problems sizes (N)
+143360 256000 1000         Ns  
+1            # of NBs
+384 192 256      NBs 
+1            PMAP process mapping (0=Row-,1=Column-major)
+1            # of process grids (P x Q)
+1 2          Ps  
+1 2          Qs  
+16.0         threshold
+1            # of panel fact
+2 1 0        PFACTs (0=left, 1=Crout, 2=Right)
+1            # of recursive stopping criterium
+2            NBMINs (&gt;= 1)
+1            # of panels in recursion
+2            NDIVs
+1            # of recursive panel fact.
+1 0 2        RFACTs (0=left, 1=Crout, 2=Right)
+1            # of broadcast
+0            BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
+1            # of lookahead depth
+0            DEPTHs (&gt;=0)
+0            SWAP (0=bin-exch,1=long,2=mix)
+1            swapping threshold
+1            L1 in (0=transposed,1=no-transposed) form
+1            U  in (0=transposed,1=no-transposed) form
+0            Equilibration (0=no,1=yes)
+8            memory alignment in double (&gt; 0)
+</code></pre></div>
+<p>测试过程中您可以根据节点的硬件配置，调整 HPL.dat 文件中相关参数，参数的说明如下所示。</p>
+<ul>
+<li>第 5~6 行内容。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="m">1</span><span class="w">            </span><span class="c1"># of problems sizes (N)，N 表示求解的矩阵数量与规模</span>
+<span class="m">143360</span><span class="w"> </span><span class="m">256000</span><span class="w"> </span><span class="m">1000</span><span class="w">         </span>Ns<span class="w">  </span>
+</code></pre></div>
+<p>N 表示求解的矩阵数量与规模。矩阵规模 N 越大，有效计算所占的比例也越大，系统浮点处理性能也就越高。但矩阵规模越大会导致内存消耗量越多，如果系统实际内存空间不足，使用缓存、性能会大幅度降低。矩阵占用系统总内存的 80% 左右为最佳，即 N×N×8=系统总内存×80%（其中总内存的单位为字节）。</p>
+<ul>
+<li>第 7~8 行内容。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="m">1</span><span class="w">            </span><span class="c1"># of NBs，NB 表示求解矩阵过程中矩阵分块的大小</span>
+<span class="m">384</span><span class="w"> </span><span class="m">192</span><span class="w"> </span><span class="m">256</span><span class="w">      </span>NBs<span class="w"> </span>
+</code></pre></div>
+<p>求解矩阵过程中矩阵分块的大小。分块大小对性能有很大的影响，NB 的选择和软硬件许多因素密切相关。NB 值的选择主要是通过实际测试得出最优值，一般遵循以下规律：</p>
+<ul>
+<li>NB 不能太大或太小，一般小于 384。</li>
+<li>NB×8 一定是缓存行的倍数。</li>
+<li>NB 的大小和通信方式、矩阵规模、网络、处理器速度等有关系。</li>
+</ul>
+<p>一般通过单节点或单 CPU 测试可以得到几个较好的 NB 值，但当系统规模增加、问题规模变大，有些 NB 取值所得性能会下降。因此建议在小规模测试时选择 3 个性能不错的 NB 值，再通过大规模测试检验这些选择。</p>
+<ul>
+<li>第 10~12 行内容。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="m">1</span><span class="w">            </span><span class="c1"># of process grids (P x Q)，P 表示水平方向处理器个数，Q 表示垂直方向处理器个数</span>
+<span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w">          </span>Ps<span class="w">  </span>
+<span class="m">1</span><span class="w"> </span><span class="m">2</span><span class="w">          </span>Qs<span class="w">  </span>
+</code></pre></div>
+<p>P 表示水平方向处理器个数，Q 表示垂直方向处理器个数。P×Q 表示二维处理器网格。P×Q=系统 CPU 数=进程数。一般情况下一个进程对应一个 CPU，可以得到最佳性能。对于 Intel ® Xeon ®，关闭超线程可以提高 HPL 性能。P 和 Q 的取值一般遵循以下规律：</p>
+<ul>
+<li>P≤Q，一般情况下 P 的取值小于 Q，因为列向通信量（通信次数和通信数据量）要远大于横向通信。</li>
+<li>P 建议选择 2 的幂。HPL 中水平方向通信采用二元交换法（Binary Exchange），当水平方向处理器个数 P 为 2 的幂时性能最优。</li>
+</ul>
+
+
+  
+
+
+  
+
+
+
+      
+    </article>
+  </div>
+
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../../07/qlut/" class="md-footer__link md-footer__link--prev" aria-label="上一页: QLUT 镜像站的日志监控及预警方案" rel="prev">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                QLUT 镜像站的日志监控及预警方案
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../22/pytorch-/" class="md-footer__link md-footer__link--next" aria-label="下一页: Pytorch 学习回顾--数据预处理" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                Pytorch 学习回顾--数据预处理
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.footer", "content.code.copy", "toc.follow", "toc.integrate"], "search": "../../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.4e31edb1.min.js"></script>
+      
+    
+  </body>
+</html>
